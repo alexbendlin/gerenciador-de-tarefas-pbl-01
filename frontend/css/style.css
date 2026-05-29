@@ -1,3 +1,131 @@
-body {
-    background-color: #f4f7f6; /* Um tom de cinza esverdeado bem suave e moderno */
+/* Definição do escopo global de variáveis de design */
+:root {
+    --cor-background: #f4f6f9;
+    --cor-card: #ffffff;
+    --cor-texto-principal: #2d3748;
+    --cor-texto-secundario: #718096;
+    --cor-primaria: #4f46e5; /* Roxo moderno */
+    --cor-primaria-hover: #4338ca;
+    --cor-sucesso: #10b981; /* Verde para concluído */
+    --cor-perigo: #ef4444;  /* Vermelho para exclusão */
+    --cor-borda: #e2e8f0;
+    
+    --fonte-principal: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    --raio-borda: 8px;
+    --sombra-suave: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
 }
+
+/* Reset CSS Eficiente */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box; /* Crucial para controle de tamanho */
+}
+
+body {
+    background-color: var(--cor-background);
+    color: var(--cor-texto-principal);
+    font-family: var(--fonte-principal);
+    line-height: 1.6;
+    padding: 20px;
+}
+
+header {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+header h1 {
+    font-size: 2.5rem;
+    color: var(--cor-primaria);
+    margin-bottom: 5px;
+}
+
+header p {
+    color: var(--cor-texto-secundario);
+}
+
+/* Container geral para organizar o fluxo vertical por enquanto */
+main {
+    max-width: 600px;
+    margin: 0 auto; /* Centraliza o bloco na tela horizontalmente */
+}
+
+section {
+    background-color: var(--cor-card);
+    padding: 25px;
+    margin-bottom: 25px;
+    border-radius: var(--raio-borda);
+    box-shadow: var(--sombra-suave);
+}
+
+section h2 {
+    font-size: 1.5rem;
+    margin-bottom: 20px;
+    border-bottom: 2px solid var(--cor-borda);
+    padding-bottom: 10px;
+    color: var(--cor-primaria);
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: var(--cor-texto-principal);
+}
+
+/* Estilização universal para caixas de entrada de dados */
+input[type="text"],
+input[type="date"],
+select,
+textarea {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid var(--cor-borda);
+    border-radius: var(--raio-borda);
+    font-family: inherit;
+    font-size: 1rem;
+    color: var(--cor-texto-principal);
+    background-color: #fafafa;
+    transition: all 0.2s ease; /* Transição suave para o efeito de foco */
+}
+
+/* Efeito visual quando o aluno clica ou foca no campo */
+input[type="text"]:focus,
+input[type="date"]:focus,
+select:focus,
+textarea:focus {
+    outline: none;
+    border-color: var(--cor-primaria);
+    background-color: #ffffff;
+    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.15);
+}
+
+textarea {
+    resize: vertical; /* Impede o usuário de quebrar o layout horizontalmente */
+    min-height: 80px;
+}
+
+/* Estilização do Botão de Envio principal */
+button[type="submit"] {
+    width: 100%;
+    background-color: var(--cor-primaria);
+    color: white;
+    border: none;
+    padding: 12px;
+    font-size: 1rem;
+    font-weight: bold;
+    border-radius: var(--raio-borda);
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+button[type="submit"]:hover {
+    background-color: var(--cor-primaria-hover);
+}
+

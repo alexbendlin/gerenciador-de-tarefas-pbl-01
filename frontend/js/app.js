@@ -1,90 +1,55 @@
 // ==========================================================================
-// 1. DECLARAÇÃO DE VARIÁVEIS COM LET E CONST
+// 1. MAPEAMENTO E SELEÇÃO DE ELEMENTOS DO DOM
 // ==========================================================================
 
-// Usamos 'const' para dados que nunca mudam de identificação
-const nomeAplicacao = "TaskMaster";
+// Selecionamos o formulário completo usando o ID
+const formTarefa = document.querySelector("#form-tarefa");
 
-// Usamos 'let' para dados que podem ser alterados/atualizados no sistema
-let totalTarefasConcluidas = 0;
-
-// Testando alterações
-totalTarefasConcluidas = 1; // Permitido! Alterou o valor na memória.
-
-// Se tentássemos fazer: nomeAplicacao = "OutroNome"; -> O JavaScript geraria um erro crítico!
-
-console.log("Nome da Aplicação:", nomeAplicacao);
-console.log("Tarefas concluídas até agora:", totalTarefasConcluidas);
+// Selecionamos cada input individualmente para capturar seus valores depois
+const inputTitulo = document.querySelector("#titulo");
+const inputDescricao = document.querySelector("#descricao");
+const inputPrazo = document.querySelector("#prazo");
+const inputCategoria = document.querySelector("#categoria");
 
 // ==========================================================================
-// 2. MODELAGEM DE DADOS UTILIZANDO OBJETOS
+// 2. INTERCEPTAÇÃO DE EVENTOS (EVENT LISTENERS)
 // ==========================================================================
 
-const tarefaExemplo = {
-    id: 1,
-    titulo: "Estudar JavaScript Moderno",
-    descricao: "Revisar conceitos de let, const, objetos e arrays.",
-    prazo: "2026-06-05",
-    categoria: "Estudos",
-    concluida: false // Tipo Boolean: indica se a tarefa foi feita ou não
-};
+formTarefa.addEventListener("submit", function(event) {
+    // IMPEDIR O COMPORTAMENTO PADRÃO: Evita que a página recarregue e limpe tudo
+    event.preventDefault();
 
-// Acessando propriedades do objeto usando a notação de ponto (.)
-console.log("Título da Tarefa:", tarefaExemplo.titulo);
-console.log("Está concluída?", tarefaExemplo.concluida);
+    // Capturando os valores reais digitados pelo usuário através da propriedade .value
+    const valorTitulo = inputTitulo.value;
+    const valorDescricao = inputDescricao.value;
+    const valorPrazo = inputPrazo.value;
+    const valorCategoria = inputCategoria.value;
 
-// ==========================================================================
-// 3. COLEÇÃO DE DADOS UTILIZANDO ARRAYS
-// ==========================================================================
+    // Exibindo os dados capturados para validar a operação
+    console.log("--- Nova Tarefa Capturada do Formulário ---");
+    console.log("Título:", valorTitulo);
+    console.log("Descrição:", valorDescricao);
+    console.log("Prazo:", valorPrazo);
+    console.log("Categoria:", valorCategoria);
 
-// Um array (lista) de objetos literais
-const listaDeTarefasMock = [
-    {
-        id: 1,
-        titulo: "Configurar o Codespaces",
-        prazo: "2026-05-28",
-        categoria: "Trabalho",
-        concluida: true
-    },
-    {
-        id: 2,
-        titulo: "Estudar CSS Grid e Flexbox",
-        prazo: "2026-06-02",
-        categoria: "Estudos",
-        concluida: false
-    }
-];
+    // Exibe um feedback visual simples para o usuário
+    alert(`Sucesso! A tarefa "${valorTitulo}" foi capturada.`);
 
-// Verificando a lista completa no console do desenvolvedor
-console.log("Minha Lista de Tarefas Atual:", listaDeTarefasMock);
-
-// Descobrindo o tamanho da lista dinamicamente
-console.log("Quantidade de tarefas na lista:", listaDeTarefasMock.length);
+    // Executa a função para limpar os campos (Passo 3)
+    limparFormulario();
+});
 
 // ==========================================================================
-// RESOLUÇÃO DO DESAFIO: ADICIONANDO NOVOS ELEMENTOS AO ARRAY
+// 3. FUNÇÕES DE SUPORTE
 // ==========================================================================
 
-// 1. Criando um novo objeto de tarefa (simulando a captura de um formulário)
-const novaTarefa = {
-    id: 3,
-    titulo: "Praticar o desafio de JavaScript",
-    descricao: "Criar um objeto e inseri-lo no array de tarefas utilizando o método push.",
-    prazo: "2026-05-30",
-    categoria: "Pessoal",
-    concluida: false
-};
+function limparFormulario() {
+    inputTitulo.value = "";
+    inputDescricao.value = "";
+    inputPrazo.value = "";
+    inputCategoria.value = "trabalho"; // Reseta para a primeira opção padrão
+    
+    // Devolve o cursor piscando para o campo de título automaticamente
+    inputTitulo.focus();
+}
 
-// 2. Inserindo o novo objeto diretamente no final do nosso array existente
-listaDeTarefasMock.push(novaTarefa);
-
-/* Por que usar push? 
-   O método .push() é uma função nativa dos arrays em JavaScript. Ele adiciona 
-   um ou mais elementos ao final do array e atualiza o tamanho da lista automaticamente.
-*/
-
-// 3. Exibindo os resultados no console para validação
-console.log("--- RESULTADO DO DESAFIO ---");
-console.log("A nova tarefa foi adicionada com sucesso!");
-console.log("Lista de tarefas atualizada:", listaDeTarefasMock);
-console.log("Novo tamanho total da lista:", listaDeTarefasMock.length);

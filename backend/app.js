@@ -36,6 +36,22 @@ app.get('/status', function(requisicao, resposta) {
     });
 });
 
+// ==========================================================================
+// ROTA ADICIONAL: INFORMAÇÕES DO DOCENTE (RESOLUÇÃO DO DESAFIO)
+// ==========================================================================
+
+/* Criando o endpoint '/professor' para retornar dados institucionais 
+   da disciplina de forma estruturada */
+app.get('/professor', function(requisicao, resposta) {
+    resposta.json({
+        docente: "Alexandre Bendlin",
+        disciplina: "Desenvolvimento de Sistemas",
+        cargaHorariaTotal: "160 horas",
+        metodologia: "Aprendizado Baseado em Projetos (PBL)",
+        projetoEvolutivo: "Gerenciador de Tarefas (MasterTask)"
+    });
+});
+
 // 5. Ligando o servidor para escutar as requisições na porta definida
 app.listen(PORTA, function() {
     console.log(`==================================================`);

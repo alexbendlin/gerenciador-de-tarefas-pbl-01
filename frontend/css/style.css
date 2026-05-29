@@ -158,6 +158,33 @@ footer {
     }
 }
 
+/* ==========================================================================
+   RESOLUÇÃO DO DESAFIO: ESTILIZAÇÃO DO CONTAINER DE FILTROS (FLEXBOX)
+   ========================================================================== */
+
+#filtros-container {
+    display: flex;       /* Ativa o Flexbox para alinhar os itens em linha */
+    align-items: center; /* Alinha verticalmente o Label e o Select ao centro */
+    gap: 12px;           /* Cria um espaçamento sutil e fixo entre os elementos */
+    margin-bottom: 20px; /* Afasta o bloco de filtros do primeiro card da lista */
+    padding: 10px;
+    background-color: #fafafa; /* Fundo ligeiramente diferenciado para destacar a barra */
+    border-radius: 6px;
+}
+
+#filtros-container label {
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: var(--cor-texto-secundario);
+    white-space: nowrap; /* Impede que o texto quebre em duas linhas em telas menores */
+}
+
+#filtros-container select {
+    max-width: 180px;    /* Limita a largura do select para não ocupar 100% da tela */
+    padding: 6px 10px;   /* Deixa o seletor ligeiramente mais compacto que os do formulário */
+    font-size: 0.9rem;
+}
+
 /* Remove as bolinhas padrão da lista */
 #lista-tarefas {
     list-style: none;

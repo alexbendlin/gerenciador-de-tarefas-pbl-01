@@ -52,6 +52,49 @@ app.get('/professor', function(requisicao, resposta) {
     });
 });
 
+// ==========================================================================
+// ENDPOINTS RESTFUL DA API DE TAREFAS (ASSINATURAS DO CRUD)
+// ==========================================================================
+
+// 1. ROTA DE LEITURA TOTAL (GET /tarefas)
+app.get('/tarefas', function(requisicao, resposta) {
+    console.log("Requisição recebida: Listar todas as tarefas.");
+    resposta.json({ mensagem: "Aqui será retornada a lista completa de tarefas." });
+});
+
+// 2. ROTA DE LEITURA INDIVIDUAL (GET /tarefas/:id)
+app.get('/tarefas/:id', function(requisicao, resposta) {
+    // Capturando o ID dinâmico vindo da URL do navegador
+    const idTarefa = requisicao.params.id;
+    console.log(`Requisição recebida: Buscar detalhes da tarefa de ID: ${idTarefa}`);
+    
+    resposta.json({ mensagem: `Aqui serão retornados os dados da tarefa ${idTarefa}.` });
+});
+
+// 3. ROTA DE CRIAÇÃO (POST /tarefas)
+app.post('/tarefas', function(requisicao, resposta) {
+    console.log("Requisição recebida: Inserir uma nova tarefa.");
+    resposta.status(201).json({ mensagem: "Tarefa criada com sucesso (Simulação)." });
+});
+
+// 4. ROTA DE ATUALIZAÇÃO (PUT /tarefas/:id)
+app.put('/tarefas/:id', function(requisicao, resposta) {
+    const idTarefa = requisicao.params.id;
+    console.log(`Requisição recebida: Alterar dados da tarefa de ID: ${idTarefa}`);
+    
+    resposta.json({ mensagem: `A tarefa ${idTarefa} foi atualizada com sucesso.` });
+});
+
+// 5. ROTA DE EXCLUSÃO (DELETE /tarefas/:id)
+app.delete('/tarefas/:id', function(requisicao, resposta) {
+    const idTarefa = requisicao.params.id;
+    console.log(`Requisição recebida: Excluir a tarefa de ID: ${idTarefa}`);
+    
+    resposta.json({ mensagem: `A tarefa ${idTarefa} foi removida do sistema.` });
+});
+
+
+
 // 5. Ligando o servidor para escutar as requisições na porta definida
 app.listen(PORTA, function() {
     console.log(`==================================================`);

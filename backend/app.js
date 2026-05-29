@@ -108,6 +108,29 @@ app.get('/tarefas/:id', function(requisicao, resposta) {
     resposta.json(tarefaEncontrada);
 });
 
+// ==========================================================================
+// ROTA DE FILTRAGEM POR CATEGORIA (GET /tarefas/categoria/:nomeCategoria) - DESAFIO
+// ==========================================================================
+app.get('/tarefas/categoria/:nomeCategoria', function(requisicao, resposta) {
+    // Captura o parâmetro dinâmico da URL
+    const categoriaBusca = requisicao.params.nomeCategoria;
+    
+    console.log(`Log do Servidor: Filtrando tarefas pela categoria: [${categoriaBusca}]`);
+
+    /* Usamos o método .filter() para varrer o array. Diferente do .find() (que para no primeiro),
+       o .filter() varre a lista inteira e retorna um NOVO array contendo TODOS os objetos 
+       que retornarem 'true' na condição lógica. */
+    const tarefasFiltradas = bancoDeTarefas.filter(function(tarefa) {
+        // Tratamos ambos os lados para minúsculas para evitar erros de digitação (ex: Estudos vs estudos)
+        return tarefa.categoria.toLowerCase() === categoriaBusca.toLowerCase();
+    });
+
+    /* Padrão de mercado (Boas práticas RESTful): Se a categoria existe ou não, mas não há 
+       itens nela, respondemos com o Status 200 OK devolvendo o array vazio []. 
+       Isso avisa ao frontend que a rota funciona, mas não há registros para exibir. */
+    resposta.json(tarefasFiltradas);
+});
+
 // 3. ROTA DE CRIAÇÃO (POST /tarefas) - COM VALIDAÇÃO DE PRIORIDADE (DESAFIO)
 app.post('/tarefas', function(requisicao, resposta) {
     const { titulo, descricao, prazo, categoria, prioridade } = requisicao.body;

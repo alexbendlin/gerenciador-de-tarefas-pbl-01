@@ -232,7 +232,7 @@ app.put('/tarefas/:id', function(requisicao, resposta) {
     });
 });
 
-// 5. ROTA DE EXCLUSÃO DEFINITIVA (DELETE /tarefas/:id)
+// 5. ROTA DE EXCLUSÃO DEFINITIVA (DELETE /tarefas/:id) - COM TRAVA
 app.delete('/tarefas/:id', function(requisicao, resposta) {
     const idBusca = Number(requisicao.params.id);
 
@@ -241,7 +241,7 @@ app.delete('/tarefas/:id', function(requisicao, resposta) {
         return tarefa.id === idBusca;
     });
 
-    // Se não localizar o ID, barra a operação retornando 404
+    // 1. Validação de existência (mantida da aula anterior)
     if (indiceTarefa === -1) {
         console.log(`Log do Servidor: Falha ao excluir. ID ${idBusca} não encontrado.`);
         return resposta.status(404).json({
@@ -250,17 +250,29 @@ app.delete('/tarefas/:id', function(requisicao, resposta) {
         });
     }
 
-    // Captura o nome da tarefa antes de apagar (para usarmos na mensagem de log)
-    const nomeTarefaExcluida = bancoDeTarefas[indiceTarefa].titulo;
+    // Captura a tarefa localizada na memória para checar suas propriedades
+    const tarefaAlvo = bancoDeTarefas[indiceTarefa];
 
-    /* O método .splice() remove o elemento diretamente do array original.
-       Passamos o índice localizado e o número 1, indicando para apagar apenas aquele item. */
+    // 2. RESOLUÇÃO DO DESAFIO: Trava de segurança para tarefas pendentes
+    if (tarefaAlvo.concluida === false) {
+        console.log(`Log do Servidor: Bloqueio de exclusão. A tarefa "${tarefaAlvo.titulo}" ainda está pendente.`);
+        
+        /* Interrompemos a deleção e retornamos o Status 400 Bad Request explicando 
+           a regra de negócio ao cliente */
+        return resposta.status(400).json({
+            erro: "Regra de Negócio Violada (Bad Request)",
+            mensagem: `Não é permitido excluir a tarefa "${tarefaAlvo.titulo}" porque ela ainda está pendente. Conclua a tarefa primeiro antes de removê-la do sistema.`,
+            statusTarefa: "pendente"
+        });
+    }
+
+    // 3. Fluxo de remoção real (só executa se a tarefa estiver marcada como concluída)
+    const nomeTarefaExcluida = tarefaAlvo.titulo;
     bancoDeTarefas.splice(indiceTarefa, 1);
 
     console.log(`Log do Servidor: Tarefa "${nomeTarefaExcluida}" foi deletada da memória.`);
     console.log(`Tarefas restantes no servidor: ${bancoDeTarefas.length}`);
 
-    // Responde ao cliente confirmando o sucesso da deleção
     resposta.json({
         sucesso: true,
         mensagem: `A tarefa "${nomeTarefaExcluida}" foi removida do ecossistema com sucesso.`

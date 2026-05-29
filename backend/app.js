@@ -280,6 +280,39 @@ app.delete('/tarefas/:id', function(requisicao, resposta) {
 });
 
 
+// ==========================================================================
+// MIDDLEWARE: CAPTURA DE ROTAS NÃO ENCONTRADAS (404-FALLBACK) - CORREÇÃO FINAL
+// ==========================================================================
+/* Usando o app.use SEM especificar nenhuma string de rota antes da função, 
+   o Express aplica este middleware como um Fallback automático para 100% 
+   das requisições que não casaram com as rotas anteriores. */
+app.use(function(requisicao, resposta) {
+    console.log(`⚠️ Alerta: Tentativa de acesso a rota inexistente: [${requisicao.method}] ${requisicao.originalUrl}`);
+    
+    resposta.status(404).json({
+        erro: "Rota Não Encontrada",
+        mensagem: `O endpoint '${requisicao.originalUrl}' com o método '${requisicao.method}' não existe nesta API. Verifique a documentação.`
+    });
+});
+
+// ==========================================================================
+// MIDDLEWARE GLOBAL: TRATAMENTO CENTRALIZADO DE EXCEÇÕES (500)
+// ==========================================================================
+/* ATENÇÃO: A presença dos 4 parâmetros (erro, requisicao, resposta, next) 
+   informa ao Express que este é o guardião de falhas oficial do sistema. */
+app.use(function(erro, requisicao, resposta, next) {
+    // Registramos o erro detalhado no log interno do servidor para auditoria do Dev
+    console.error("❌ CRÍTICO - Erro interno processado pelo Guardião:".red);
+    console.error(erro.stack);
+
+    // Escondemos o erro de código do usuário e devolvemos uma resposta corporativa padrão
+    resposta.status(500).json({
+        erro: "Erro Interno do Servidor (Internal Server Error)",
+        mensagem: "Ocorreu uma falha inesperada em nossos servidores. Nossa equipe técnica já foi alertada.",
+        timestamp: new Date().toISOString()
+    });
+});
+
 
 // 5. Ligando o servidor para escutar as requisições na porta definida
 app.listen(PORTA, function() {

@@ -45,10 +45,14 @@ header p {
     color: var(--cor-texto-secundario);
 }
 
-/* Container geral para organizar o fluxo vertical por enquanto */
+/* Configuração do Layout Macro (Duas Colunas) */
 main {
-    max-width: 600px;
-    margin: 0 auto; /* Centraliza o bloco na tela horizontalmente */
+    max-width: 1100px; /* Expandimos a largura máxima para caber duas colunas */
+    margin: 40px auto;
+    
+    display: grid;
+    grid-template-columns: 1fr 2fr; /* Coluna do formulário (1 parte) e da lista (2 partes) */
+    gap: 30px; /* Espaçamento entre as colunas */
 }
 
 section {
@@ -129,3 +133,122 @@ button[type="submit"]:hover {
     background-color: var(--cor-primaria-hover);
 }
 
+/* Estilização do Footer */
+footer {
+    text-align: center;
+    color: var(--cor-texto-secundario);
+    font-size: 0.875rem; /* Ajuste sutil para reduzir o tamanho da fonte */
+    padding: 1.5rem 1rem; /* Espaçamento interno (vertical e horizontal) */
+    border-top: 1px solid var(--cor-borda-suave, #e0e0e0); /* Borda superior sutil */
+}
+
+/* Alteração temporária do botão de excluir */
+.btn-excluir {
+    background-color: var(--cor-perigo);
+    /* Caso precise garantir que o texto continue legível sobre o fundo vermelho: */
+    color: #ffffff; 
+}
+
+/* Responsividade: Regras aplicadas para telas de tablets e celulares */
+@media (max-width: 768px) {
+    main {
+        grid-template-columns: 1fr; /* Em telas menores, passa a ter apenas 1 coluna */
+        gap: 20px;
+        padding: 0 10px;
+    }
+}
+
+/* Remove as bolinhas padrão da lista */
+#lista-tarefas {
+    list-style: none;
+}
+
+/* O Card da Tarefa individual */
+.tarefa-item {
+    background-color: var(--cor-card);
+    border-left: 5px solid var(--cor-primaria); /* Barra lateral indicando a categoria/status */
+    border-radius: var(--raio-borda);
+    padding: 18px;
+    margin-bottom: 15px;
+    box-shadow: var(--sombra-suave);
+    
+    /* Flexbox para colocar as informações do card à esquerda e botões à direita */
+    display: flex;
+    justify-content: space-between; /* Empurra os blocos para as extremidades */
+    align-items: center; /* Alinha os blocos verticalmente ao centro */
+    gap: 15px;
+}
+
+/* Organização interna dos textos do card */
+.tarefa-info h3 {
+    font-size: 1.2rem;
+    margin-bottom: 5px;
+}
+
+.tarefa-info p {
+    color: var(--cor-texto-secundario);
+    font-size: 0.95rem;
+    margin-bottom: 10px;
+}
+
+/* Alinhamento das Badges e Prazos lado a lado */
+.meta-container {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.badge-categoria {
+    background-color: rgba(79, 70, 229, 0.1);
+    color: var(--cor-primaria);
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+.prazo-data {
+    font-size: 0.85rem;
+    color: var(--cor-texto-secundario);
+}
+
+/* Container dos botões do card */
+.tarefa-acoes {
+    display: flex;
+    gap: 8px; /* Espaçamento entre os botões */
+}
+
+.tarefa-acoes button {
+    border: none;
+    padding: 8px 12px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.2s ease, transform 0.1s ease;
+}
+
+.btn-concluir {
+    background-color: rgba(16, 185, 129, 0.1);
+    color: var(--cor-sucesso);
+}
+
+.btn-concluir:hover {
+    background-color: var(--cor-sucesso);
+    color: white;
+}
+
+.btn-excluir {
+    background-color: rgba(239, 68, 68, 0.1);
+    color: var(--cor-perigo);
+}
+
+.btn-excluir:hover {
+    background-color: var(--cor-perigo);
+    color: white;
+}
+
+.tarefa-acoes button:active {
+    transform: scale(0.95); /* Efeito sutil de clique */
+}

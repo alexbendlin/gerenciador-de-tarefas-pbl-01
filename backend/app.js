@@ -1,16 +1,27 @@
 // ==========================================================================
-// SERVIDOR MASTERTASK - INICIALIZAÇÃO BASE (COM CORES)
+// SERVIDOR MASTERTASK - CONFIGURAÇÃO DO EXPRESS
 // ==========================================================================
 
-// Importando a biblioteca de terceiros instalada via NPM
-import colors from 'colors';
+// 1. Importando o framework Express
+import express from 'express';
 
-// Utilizando métodos de extensão que a biblioteca adiciona automaticamente às Strings
-console.log("=== SISTEMA INICIALIZADO VIA NODE.JS ===".rainbow);
-console.log("Sucesso: O ambiente backend foi configurado corretamente.".green.bold);
+// 2. Inicializando a aplicação Express
+const app = express();
 
-const versaoNode = process.version;
-const plataformaOS = process.platform;
+// 3. Definindo a porta lógica onde o servidor vai operar
+const PORTA = 3000;
 
-console.log(`Versão do Node.js em execução: ${versaoNode.cyan}`);
-console.log(`Sistema Operacional do Servidor: ${plataformaOS.yellow}`);
+// 4. CRIANDO A PRIMEIRA ROTA (Rota Raiz / Home)
+app.get('/', function(requisicao, resposta) {
+    /* O método .send() envia uma resposta de texto simples ou HTML 
+       de volta para o navegador do cliente */
+    resposta.send("🚀 API do Gerenciador de Tarefas rodando com Express com sucesso!");
+});
+
+// 5. Ligando o servidor para escutar as requisições na porta definida
+app.listen(PORTA, function() {
+    console.log(`==================================================`);
+    console.log(` Servidor rodando com sucesso na porta ${PORTA}!`);
+    console.log(` Acesse em: http://localhost:${PORTA} `);
+    console.log(`==================================================`);
+});

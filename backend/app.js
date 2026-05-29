@@ -62,13 +62,30 @@ app.get('/tarefas', function(requisicao, resposta) {
     resposta.json({ mensagem: "Aqui será retornada a lista completa de tarefas." });
 });
 
-// 2. ROTA DE LEITURA INDIVIDUAL (GET /tarefas/:id)
+// 2. ROTA DE LEITURA INDIVIDUAL (GET /tarefas/:id) - COM VALIDAÇÃO (DESAFIO)
 app.get('/tarefas/:id', function(requisicao, resposta) {
-    // Capturando o ID dinâmico vindo da URL do navegador
+    // Capturando o parâmetro dinâmico enviado na URL
     const idTarefa = requisicao.params.id;
-    console.log(`Requisição recebida: Buscar detalhes da tarefa de ID: ${idTarefa}`);
     
-    resposta.json({ mensagem: `Aqui serão retornados os dados da tarefa ${idTarefa}.` });
+    console.log(`Log do Servidor: Processando busca para o ID: ${idTarefa}`);
+
+    // RESOLUÇÃO DO DESAFIO: Validação preventiva do parâmetro recebido
+    if (idTarefa === "0") {
+        /* Se o cliente tentar buscar o ID 0, nós interrompemos o fluxo 
+           e retornamos explicitamente o Status HTTP 400 (Bad Request) 
+           junto com um objeto estruturado detalhando o erro. */
+        return resposta.status(400).json({
+            erro: "Requisição Inválida (Bad Request)",
+            mensagem: "O identificador informado deve ser maior que zero. O ID 0 não existe no sistema.",
+            timestamp: new Date().toISOString()
+        });
+    }
+
+    // Fluxo normal caso o ID seja diferente de 0
+    resposta.json({ 
+        sucesso: true,
+        mensagem: `Aqui serão retornados os dados reais da tarefa com identificador: ${idTarefa}.` 
+    });
 });
 
 // 3. ROTA DE CRIAÇÃO (POST /tarefas)

@@ -62,36 +62,50 @@ app.get('/professor', function(requisicao, resposta) {
 // ENDPOINTS RESTFUL DA API DE TAREFAS (ASSINATURAS DO CRUD)
 // ==========================================================================
 
-// 1. ROTA DE LEITURA TOTAL (GET /tarefas)
+// 1. ROTA DE LEITURA TOTAL (GET /tarefas) - IMPLEMENTAÇÃO REAL
 app.get('/tarefas', function(requisicao, resposta) {
-    console.log("Requisição recebida: Listar todas as tarefas.");
-    resposta.json({ mensagem: "Aqui será retornada a lista completa de tarefas." });
+    console.log(`Log do Servidor: Listando tarefas. Total atual: ${bancoDeTarefas.length}`);
+    
+    // Devolve o array completo em formato JSON com o Status padrão 200 OK
+    resposta.json(bancoDeTarefas);
 });
 
-// 2. ROTA DE LEITURA INDIVIDUAL (GET /tarefas/:id) - COM VALIDAÇÃO (DESAFIO)
+// 2. ROTA DE LEITURA INDIVIDUAL (GET /tarefas/:id) - IMPLEMENTAÇÃO REAL
 app.get('/tarefas/:id', function(requisicao, resposta) {
-    // Capturando o parâmetro dinâmico enviado na URL
-    const idTarefa = requisicao.params.id;
-    
-    console.log(`Log do Servidor: Processando busca para o ID: ${idTarefa}`);
+    const idParametro = requisicao.params.id;
 
-    // RESOLUÇÃO DO DESAFIO: Validação preventiva do parâmetro recebido
-    if (idTarefa === "0") {
-        /* Se o cliente tentar buscar o ID 0, nós interrompemos o fluxo 
-           e retornamos explicitamente o Status HTTP 400 (Bad Request) 
-           junto com um objeto estruturado detalhando o erro. */
+    // Validação preventiva do ID 0 (mantida da aula 12)
+    if (idParametro === "0") {
         return resposta.status(400).json({
-            erro: "Requisição Inválida (Bad Request)",
-            mensagem: "O identificador informado deve ser maior que zero. O ID 0 não existe no sistema.",
-            timestamp: new Date().toISOString()
+            erro: "Requisição Inválida",
+            mensagem: "O identificador informado deve ser maior que zero."
         });
     }
 
-    // Fluxo normal caso o ID seja diferente de 0
-    resposta.json({ 
-        sucesso: true,
-        mensagem: `Aqui serão retornados os dados reais da tarefa com identificador: ${idTarefa}.` 
+    /* CRÍTICO: Convertemos a String da URL para Number, garantindo a correspondência 
+       com o tipo de dado salvo no nosso objeto (id: Date.now()) */
+    const idBusca = Number(idParametro);
+
+    // Utilizamos o método .find() para varrer a lista atrás do objeto com o ID correspondente
+    const tarefaEncontrada = bancoDeTarefas.find(function(tarefa) {
+        return tarefa.id === idBusca;
     });
+
+    // Se o .find() não encontrar correspondência, ele retorna undefined (falsy)
+    if (!tarefaEncontrada) {
+        console.log(`Log do Servidor: Tarefa com ID ${idBusca} não foi localizada.`);
+        
+        /* Retornamos explicitamente o Status 404 (Not Found) interrompendo o fluxo */
+        return resposta.status(404).json({
+            erro: "Não Encontrado (Not Found)",
+            mensagem: `Não foi encontrada nenhuma tarefa com o identificador ${idBusca}.`
+        });
+    }
+
+    console.log(`Log do Servidor: Tarefa localizada com sucesso! [${tarefaEncontrada.titulo}]`);
+
+    // Caso encontre, responde o objeto da tarefa com o status 200 OK
+    resposta.json(tarefaEncontrada);
 });
 
 // 3. ROTA DE CRIAÇÃO (POST /tarefas) - COM VALIDAÇÃO DE PRIORIDADE (DESAFIO)

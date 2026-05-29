@@ -5,8 +5,14 @@
 // 1. Importando o framework Express
 import express from 'express';
 
+// Array global que armazenará as tarefas na memória do servidor durante esta fase do projeto
+let bancoDeTarefas = [];
+
 // 2. Inicializando a aplicação Express
 const app = express();
+
+// CONFIGURAÇÃO CRÍTICA: Habilita o Express a ler e interpretar corpos de requisições em formato JSON
+app.use(express.json());
 
 // 3. Definindo a porta lógica onde o servidor vai operar
 const PORTA = 3000;
@@ -88,10 +94,42 @@ app.get('/tarefas/:id', function(requisicao, resposta) {
     });
 });
 
-// 3. ROTA DE CRIAÇÃO (POST /tarefas)
+// 3. ROTA DE CRIAÇÃO (POST /tarefas) - IMPLEMENTAÇÃO REAL
 app.post('/tarefas', function(requisicao, resposta) {
-    console.log("Requisição recebida: Inserir uma nova tarefa.");
-    resposta.status(201).json({ mensagem: "Tarefa criada com sucesso (Simulação)." });
+    // Extraindo as propriedades enviadas pelo cliente de dentro do corpo da requisição
+    const { titulo, descricao, prazo, categoria, prioridade } = requisicao.body;
+
+    // Validação básica de segurança preventiva
+    if (!titulo || !prazo) {
+        return resposta.status(400).json({
+            erro: "Dados incompletos",
+            mensagem: "Os campos 'titulo' e 'prazo' são obrigatórios para registrar uma tarefa."
+        });
+    }
+
+    // Montando o objeto estruturado que será salvo no nosso array
+    const novaTarefa = {
+        id: Date.now(), // Gera um ID numérico único baseado no timestamp atual do servidor
+        titulo: titulo,
+        descricao: descricao || "",
+        prazo: prazo,
+        categoria: categoria || "geral",
+        prioridade: prioridade || "baixa",
+        concluida: false // Toda tarefa nasce pendente no sistema
+    };
+
+    // Salvando o objeto criado dentro do nosso array global em memória
+    bancoDeTarefas.push(novaTarefa);
+
+    console.log("Log do Servidor: Nova tarefa adicionada com sucesso!", novaTarefa);
+    console.log(`Total de tarefas armazenadas no servidor: ${bancoDeTarefas.length}`);
+
+    // Respondendo ao cliente com o Status 201 (Created) e devolvendo a tarefa criada com seu respectivo ID
+    resposta.status(201).json({
+        sucesso: true,
+        mensagem: "Tarefa cadastrada com sucesso na memória do servidor!",
+        dado: novaTarefa
+    });
 });
 
 // 4. ROTA DE ATUALIZAÇÃO (PUT /tarefas/:id)

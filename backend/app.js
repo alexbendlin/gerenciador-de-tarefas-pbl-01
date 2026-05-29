@@ -2,6 +2,8 @@
 // SERVIDOR MASTERTASK - CONFIGURAÇÃO DO EXPRESS
 // ==========================================================================
 
+import 'colors'; // Carrega a biblioteca e estende as strings nativas com cores
+
 // 1. Importando o framework Express
 import express from 'express';
 
@@ -131,53 +133,45 @@ app.get('/tarefas/categoria/:nomeCategoria', function(requisicao, resposta) {
     resposta.json(tarefasFiltradas);
 });
 
-// 3. ROTA DE CRIAÇÃO (POST /tarefas) - COM VALIDAÇÃO DE PRIORIDADE (DESAFIO)
-app.post('/tarefas', function(requisicao, resposta) {
+// 3. ROTA DE CRIAÇÃO (POST /tarefas) - DELEGANDO ERRO AO GUARDIÃO (DESAFIO)
+/* Adicionamos o parâmetro 'next' na assinatura da função do Express */
+app.post('/tarefas', function(requisicao, resposta, next) {
     const { titulo, descricao, prazo, categoria, prioridade } = requisicao.body;
 
-    // 1. Validação de campos obrigatórios (existente)
+    // RESOLUÇÃO DO DESAFIO: Em vez de responder 400 diretamente, lançamos um erro para o Guardião
     if (!titulo || !prazo) {
-        return resposta.status(400).json({
-            erro: "Dados incompletos",
-            mensagem: "Os campos 'titulo' e 'prazo' são obrigatórios para registrar uma tarefa."
-        });
+        const erroValidacao = new Error("Falha de cadastro: Campos obrigatórios ausentes.");
+        
+        /* ATENÇÃO: Adicionar qualquer argumento dentro da função next() faz o Express 
+           ignorar todas as rotas normais seguintes e saltar direto para o Guardião de Erros 500 */
+        return next(erroValidacao);
     }
 
-    // 2. RESOLUÇÃO DO DESAFIO: Validação preventiva da prioridade
-    // Definimos um array contendo os únicos termos aceitos pelo nosso sistema
     const prioridadesPermitidas = ["baixa", "média", "alta"];
-    
-    // Tratamos o dado recebido para letras minúsculas para evitar problemas de case-sensitivity
     const prioridadeTratada = prioridade ? prioridade.toLowerCase() : "baixa";
 
-    // Se o valor enviado não estiver contido dentro da nossa lista de permissões...
     if (!prioridadesPermitidas.includes(prioridadeTratada)) {
-        /* Interrompemos o fluxo e devolvemos o Status 400 (Bad Request) explicando 
-           quais são as opções aceitáveis para o cliente corrigir o disparo */
-        return resposta.status(400).json({
-            erro: "Valor inválido para o campo 'prioridade'",
-            mensagem: `A prioridade enviada '${prioridade}' não é suportada. Use apenas: 'baixa', 'média' ou 'alta'.`
-        });
+        const erroPrioridade = new Error(`A prioridade '${prioridade}' é inválida.`);
+        return next(erroPrioridade);
     }
 
-    // 3. Montando o objeto estruturado caso passe em todas as validações
+    // Fluxo normal caso passe pelas validações
     const novaTarefa = {
         id: Date.now(), 
         titulo: titulo,
         descricao: descricao || "",
         prazo: prazo,
         categoria: categoria || "geral",
-        prioridade: prioridadeTratada, // Salvamos o dado devidamente padronizado
+        prioridade: prioridadeTratada,
         concluida: false 
     };
 
     bancoDeTarefas.push(novaTarefa);
-
-    console.log("Log do Servidor: Nova tarefa adicionada com sucesso!", novaTarefa);
+    console.log("Log do Servidor: Nova tarefa adicionada com sucesso!");
 
     resposta.status(201).json({
         sucesso: true,
-        mensagem: "Tarefa cadastrada com sucesso na memória do servidor!",
+        mensagem: "Tarefa cadastrada com sucesso!",
         dado: novaTarefa
     });
 });
@@ -296,19 +290,16 @@ app.use(function(requisicao, resposta) {
 });
 
 // ==========================================================================
-// MIDDLEWARE GLOBAL: TRATAMENTO CENTRALIZADO DE EXCEÇÕES (500)
+// MIDDLEWARE GLOBAL: TRATAMENTO CENTRALIZADO DE EXCEÇÕES (ATUALIZADO)
 // ==========================================================================
-/* ATENÇÃO: A presença dos 4 parâmetros (erro, requisicao, resposta, next) 
-   informa ao Express que este é o guardião de falhas oficial do sistema. */
 app.use(function(erro, requisicao, resposta, next) {
-    // Registramos o erro detalhado no log interno do servidor para auditoria do Dev
-    console.error("❌ CRÍTICO - Erro interno processado pelo Guardião:".red);
-    console.error(erro.stack);
+    console.error("❌ CRÍTICO - Erro interceptado pelo Guardião:".red);
+    console.error(erro.message.yellow); // Exibe a mensagem customizada que passamos no next()
 
-    // Escondemos o erro de código do usuário e devolvemos uma resposta corporativa padrão
+    // O status 500 é mantido como Fallback genérico para falhas do sistema
     resposta.status(500).json({
-        erro: "Erro Interno do Servidor (Internal Server Error)",
-        mensagem: "Ocorreu uma falha inesperada em nossos servidores. Nossa equipe técnica já foi alertada.",
+        erro: "Erro Interno Processado",
+        detalhe: erro.message, // Repassa o texto da validação dinamicamente para o cliente
         timestamp: new Date().toISOString()
     });
 });

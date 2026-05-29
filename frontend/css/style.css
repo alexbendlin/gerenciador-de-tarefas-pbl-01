@@ -279,3 +279,14 @@ footer {
 .tarefa-acoes button:active {
     transform: scale(0.95); /* Efeito sutil de clique */
 }
+
+/* Estilização da mensagem de lista vazia */
+.lista-vazia {
+    text-align: center;
+    color: var(--cor-texto-secundario);
+    padding: 30px;
+    font-style: italic;
+    border: 2px dashed var(--cor-borda);
+    border-radius: var(--raio-borda);
+    background-color: #fafafa;
+}

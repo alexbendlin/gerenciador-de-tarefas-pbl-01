@@ -10,6 +10,7 @@ const inputTitulo = document.querySelector("#titulo");
 const inputDescricao = document.querySelector("#descricao");
 const inputPrazo = document.querySelector("#prazo");
 const inputCategoria = document.querySelector("#categoria");
+const inputPrioridade = document.querySelector("#prioridade");
 
 // ==========================================================================
 // 2. INTERCEPTAÇÃO DE EVENTOS (EVENT LISTENERS)
@@ -24,6 +25,7 @@ formTarefa.addEventListener("submit", function(event) {
     const valorDescricao = inputDescricao.value;
     const valorPrazo = inputPrazo.value;
     const valorCategoria = inputCategoria.value;
+    const valorPrioridade = inputPrioridade.value;
 
     // Exibindo os dados capturados para validar a operação
     console.log("--- Nova Tarefa Capturada do Formulário ---");
@@ -33,7 +35,7 @@ formTarefa.addEventListener("submit", function(event) {
     console.log("Categoria:", valorCategoria);
 
     // Exibe um feedback visual simples para o usuário
-    alert(`Sucesso! A tarefa "${valorTitulo}" foi capturada.`);
+    alert(`Sucesso! A tarefa "${valorTitulo}" com prioridade ${valorPrioridade} foi capturada.`);
 
     // Executa a função para limpar os campos (Passo 3)
     limparFormulario();
@@ -48,6 +50,7 @@ function limparFormulario() {
     inputDescricao.value = "";
     inputPrazo.value = "";
     inputCategoria.value = "trabalho"; // Reseta para a primeira opção padrão
+    inputPrioridade.value = "baixa"; // Reseta para a primeira opção padrão
     
     // Devolve o cursor piscando para o campo de título automaticamente
     inputTitulo.focus();

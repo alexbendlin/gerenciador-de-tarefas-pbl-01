@@ -2,49 +2,54 @@
 // 1. MAPEAMENTO E SELEÇÃO DE ELEMENTOS DO DOM
 // ==========================================================================
 
-// Selecionamos o formulário completo usando o ID
 const formTarefa = document.querySelector("#form-tarefa");
-
-// Selecionamos cada input individualmente para capturar seus valores depois
 const inputTitulo = document.querySelector("#titulo");
 const inputDescricao = document.querySelector("#descricao");
 const inputPrazo = document.querySelector("#prazo");
 const inputCategoria = document.querySelector("#categoria");
 const inputPrioridade = document.querySelector("#prioridade");
-
-// Seletor da lista onde os cards serão injetados
 const listaTarefasElemento = document.querySelector("#lista-tarefas");
 
-/* Em vez de começar sempre com um array vazio, tentamos buscar o que está 
-   salvo no LocalStorage. Se não houver nada (primeiro acesso), iniciamos vazio. */
-let tarefas = carregarDoLocalStorage();
+// CONFIGURAÇÃO CRÍTICA: URL do seu Codespaces (Copie da aba Ports da Porta 3000)
+const URL_API = "https://urban-parakeet-pxqrg699qwwc5xw-3000.app.github.dev";
+
+// Nossa lista na memória do navegador começa vazia até o Fetch trazer os dados do servidor
+let tarefas = [];
 
 // ==========================================================================
-// FUNÇÃO: CARREGAR TAREFAS DO LOCALSTORAGE (ATUALIZADA COM TRY/CHATCH)
+// MÓDULO 3: FUNÇÃO ASSÍNCRONA PARA BUSCAR TAREFAS DO BACKEND (MÉTODO GET)
 // ==========================================================================
-function carregarDoLocalStorage() {
-    const dadosSalvos = localStorage.getItem("tarefas_master");
-    
-    // Se não houver nenhum dado salvo, retorna logo o array vazio padrão
-    if (!dadosSalvos) {
-        return [];
-    }
+async function buscarTarefasDoServidor() {
+    console.log("Iniciando busca de tarefas no servidor remoto...");
+    listaTarefasElemento.innerHTML = "<p class='carregando'>Carregando tarefas do servidor...</p>";
 
-    /* RESOLUÇÃO DO DESAFIO: Protegendo a aplicação contra dados corrompidos.
-       O bloco 'try' tenta executar o código. Se algo falhar, o 'catch' assume 
-       o controle evitando o travamento do sistema. */
     try {
-        // Tenta converter a string JSON de volta para Array de Objetos
-        return JSON.parse(dadosSalvos);
+        // 1. Faz a requisição de rede para o endpoint GET /tarefas
+        const respostaRede = await fetch(`${URL_API}/tarefas`);
+
+        // Segurança: Valida se o status da resposta está na faixa dos 200 (Sucesso)
+        if (!respostaRede.ok) {
+            throw new Error(`Erro de comunicação. Status: ${respostaRede.status}`);
+        }
+
+        // 2. Transforma o texto bruto JSON vindo do Express em um Array de Objetos JavaScript
+        tarefas = await respostaRede.json();
+        
+        console.log("Dados recebidos com sucesso do backend:", tarefas);
+
+        // 3. Renderiza os cards atualizados na tela com os dados da API
+        renderizarTarefas();
+
     } catch (erro) {
-        // Bloco executado apenas se o JSON estiver quebrado ou inválido
-        console.error("Erro crítico: Os dados do LocalStorage foram corrompidos!", erro);
+        console.error("❌ Falha crítica de integração:", erro.message);
         
-        // Limpa o registro quebrado do navegador para o erro não se repetir
-        localStorage.removeItem("tarefas_master");
-        
-        // Retorna um array vazio seguro para que o app continue funcionando do zero
-        return [];
+        // Feedback visual amigável na tela caso o backend esteja desligado
+        listaTarefasElemento.innerHTML = `
+            <p style="color: #ff4a4a; text-align: center; font-weight: bold; padding: 20px;">
+                Não foi possível conectar ao servidor de tarefas.<br>
+                <span style="font-size: 0.9em; font-weight: normal;">Certifique-se de que o backend está rodando com 'npm run dev'.</span>
+            </p>
+        `;
     }
 }
 
@@ -55,61 +60,55 @@ function carregarDoLocalStorage() {
 formTarefa.addEventListener("submit", function(event) {
     event.preventDefault();
 
-    // Cria o objeto contendo as propriedades estruturadas e um ID único baseado na data/hora
     const novaTarefa = {
-        id: Date.now(), // Gera um número único e seguro baseado nos milissegundos atuais
+        // O ID agora é opcional aqui, pois o backend irá gerar usando Date.now() no servidor
         titulo: inputTitulo.value,
         descricao: inputDescricao.value,
         prazo: inputPrazo.value,
         categoria: inputCategoria.value,
-        prioridade: inputPrioridade.value,
-        concluida: false
+        prioridade: inputPrioridade.value
     };
 
-    // Adiciona o novo objeto criado no fim da nossa lista na memória
-    tarefas.push(novaTarefa);
-
-    // Salva a lista atualizada no disco rígido do navegador
-    salvarNoLocalStorage();
-
-    // Renderiza a lista atualizada imediatamente na tela para o usuário ver
+    /* NOTA PEDAGÓGICA PARA O ENCONTRO 18: 
+       Por enquanto, vamos apenas simular no array local para manter a interface funcionando. 
+       No próximo encontro, trocaremos as linhas abaixo pelo fetch(..., { method: 'POST' }) */
+    tarefas.push({ ...novaTarefa, id: Date.now(), concluida: false });
     renderizarTarefas();
-
-    // Limpa o formulário para a próxima digitação
+    
     limparFormulario();
 });
 
 // ==========================================================================
-// 3. FUNÇÕES DE SUPORTE
+// 3. FUNÇÕES DE SUPORTE E RENDERIZAÇÃO
 // ==========================================================================
 
 function limparFormulario() {
     inputTitulo.value = "";
     inputDescricao.value = "";
     inputPrazo.value = "";
-    inputCategoria.value = "trabalho"; // Reseta para a primeira opção padrão
-    inputPrioridade.value = "baixa"; // Reseta para a primeira opção padrão
-    
-    // Devolve o cursor piscando para o campo de título automaticamente
+    inputCategoria.value = "trabalho"; 
+    inputPrioridade.value = "baixa"; 
     inputTitulo.focus();
 }
 
-// ==========================================================================
-// FUNÇÃO: RENDERIZAR TAREFAS NA TELA (ATUALIZADA COM DESAFIO)
-// ==========================================================================
 function renderizarTarefas() {
-    // 1. Limpa o conteúdo atual da lista para não duplicar itens antigos
-    listaTarefasElemento.innerHTML = "...";
+    console.log("Executando renderizarTarefas(). Total de itens na memória:", tarefas.length);
 
-    // 2. Verifica se a lista está vazia para exibir a mensagem estilizada
-    if (tarefas.length === 0) {
-        listaTarefasElemento.innerHTML = `<p class="lista-vazia">Nenhuma tarefa cadastrada ainda. Comece adicionando uma acima! 🎯</p>`;
+    // 1. Forçamos a limpeza ABSOLUTA do contêiner HTML antes de qualquer decisão
+    listaTarefasElemento.innerHTML = "";
+
+    // 2. Se o servidor retornou zero tarefas, injetamos o estado vazio e encerramos
+    if (!tarefas || tarefas.length === 0) {
+        listaTarefasElemento.innerHTML = `
+            <p class="lista-vazia" style="text-align: center; color: #666; padding: 20px; font-weight: 500;">
+                Nenhuma tarefa cadastrada ainda. Comece adicionando uma acima! 🎯
+            </p>
+        `;
         return; 
     }
 
-    // 3. Percorre o array de tarefas e reconstrói o HTML de cada card
+    // 3. Se houver tarefas, reconstrói os cards normalmente
     tarefas.forEach(function(tarefa) {
-        // RESOLUÇÃO DO DESAFIO: .toUpperCase() aplicado diretamente na interpolação da prioridade
         const cardHTML = `
             <li class="tarefa-item">
                 <div class="tarefa-info">
@@ -127,28 +126,14 @@ function renderizarTarefas() {
                 </div>
             </li>
         `;
-
-        // Acumula o novo card dentro da nossa UL do HTML
         listaTarefasElemento.innerHTML += cardHTML;
     });
 }
 
 // ==========================================================================
-// FUNÇÃO: SALVAR TAREFAS NO LOCALSTORAGE
-// ==========================================================================
-function salvarNoLocalStorage() {
-    /* Como o localStorage só aceita texto puro, usamos o JSON.stringify 
-       para converter nosso array de objetos em uma grande String formatada. */
-    const tarefasEmTexto = JSON.stringify(tarefas);
-    
-    // Gravamos na chave "tarefas_master" do navegador
-    localStorage.setItem("tarefas_master", tarefasEmTexto);
-}
-
-// ==========================================================================
-// EXECUÇÃO INICIAL
+// EXECUÇÃO INICIAL (ATUALIZADA)
 // ==========================================================================
 
-/* Chamamos a função uma vez logo que a página carrega. Como o array de tarefas 
-   está vazio, ela vai injetar imediatamente o nosso card de 'lista vazia'. */
-renderizarTarefas();
+/* Em vez de renderizar uma lista estática vazia, agora disparamos a busca 
+   assíncrona na API assim que a página termina de carregar no navegador */
+buscarTarefasDoServidor();

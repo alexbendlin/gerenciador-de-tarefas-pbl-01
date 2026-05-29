@@ -2,16 +2,18 @@
 // SERVIDOR MASTERTASK - CONFIGURAÇÃO DO EXPRESS
 // ==========================================================================
 
-import 'colors'; // Carrega a biblioteca e estende as strings nativas com cores
-
-// 1. Importando o framework Express
 import express from 'express';
+import cors from 'cors'; // 1. IMPORTA O MECANISMO DE PERMISSÃO
+import 'colors';
 
 // Array global que armazenará as tarefas na memória do servidor durante esta fase do projeto
 let bancoDeTarefas = [];
 
 // 2. Inicializando a aplicação Express
 const app = express();
+
+// 2. ATIVAÇÃO GLOBAL: Libera o acesso para que o frontend (porta 5000) converse com a API
+app.use(cors());
 
 // CONFIGURAÇÃO CRÍTICA: Habilita o Express a ler e interpretar corpos de requisições em formato JSON
 app.use(express.json());

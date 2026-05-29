@@ -182,20 +182,89 @@ app.post('/tarefas', function(requisicao, resposta) {
     });
 });
 
-// 4. ROTA DE ATUALIZAÇÃO (PUT /tarefas/:id)
+// 4. ROTA DE ATUALIZAÇÃO COMPLETA OU DE STATUS (PUT /tarefas/:id)
 app.put('/tarefas/:id', function(requisicao, resposta) {
-    const idTarefa = requisicao.params.id;
-    console.log(`Requisição recebida: Alterar dados da tarefa de ID: ${idTarefa}`);
+    const idBusca = Number(requisicao.params.id);
     
-    resposta.json({ mensagem: `A tarefa ${idTarefa} foi atualizada com sucesso.` });
+    // Extraímos os dados que o cliente deseja alterar de dentro do corpo da requisição
+    const { titulo, descricao, prazo, categoria, prioridade, concluida } = requisicao.body;
+
+    // Buscamos o índice (posição) do objeto no nosso array de memória
+    const indiceTarefa = bancoDeTarefas.findIndex(function(tarefa) {
+        return tarefa.id === idBusca;
+    });
+
+    // Se o findIndex retornar -1, significa que o ID enviado não existe no sistema
+    if (indiceTarefa === -1) {
+        console.log(`Log do Servidor: Falha ao atualizar. ID ${idBusca} não encontrado.`);
+        return resposta.status(404).json({
+            erro: "Não Encontrado",
+            mensagem: `Impossível atualizar. Nenhuma tarefa com o ID ${idBusca} foi localizada.`
+        });
+    }
+
+    // Capturamos o objeto original baseado na posição localizada
+    const tarefaOriginal = bancoDeTarefas[indiceTarefa];
+
+    /* Técnica de Atualização Parcial Baseada em Curto-Circuito (||):
+       Se o cliente enviou um novo dado, usamos o novo. Se o campo veio vazio ou 
+       não foi enviado no JSON, mantemos o valor que já estava salvo originalmente. */
+    const tarefaAtualizada = {
+        ...tarefaOriginal, // Copia todas as propriedades antigas (incluindo ID estável)
+        titulo: titulo !== undefined ? titulo : tarefaOriginal.titulo,
+        descricao: descricao !== undefined ? descricao : tarefaOriginal.descricao,
+        prazo: prazo !== undefined ? prazo : tarefaOriginal.prazo,
+        categoria: categoria !== undefined ? categoria : tarefaOriginal.categoria,
+        prioridade: prioridade !== undefined ? prioridade : tarefaOriginal.prioridade,
+        concluida: concluida !== undefined ? concluida : tarefaOriginal.concluida
+    };
+
+    // Substituímos o objeto velho pelo objeto atualizado exatamente na mesma posição do array
+    bancoDeTarefas[indiceTarefa] = tarefaAtualizada;
+
+    console.log(`Log do Servidor: Tarefa [${tarefaAtualizada.titulo}] atualizada com sucesso!`);
+
+    // Retorna o objeto modificado para o cliente com o status 200 OK
+    resposta.json({
+        sucesso: true,
+        mensagem: "Tarefa atualizada com sucesso!",
+        dado: tarefaAtualizada
+    });
 });
 
-// 5. ROTA DE EXCLUSÃO (DELETE /tarefas/:id)
+// 5. ROTA DE EXCLUSÃO DEFINITIVA (DELETE /tarefas/:id)
 app.delete('/tarefas/:id', function(requisicao, resposta) {
-    const idTarefa = requisicao.params.id;
-    console.log(`Requisição recebida: Excluir a tarefa de ID: ${idTarefa}`);
-    
-    resposta.json({ mensagem: `A tarefa ${idTarefa} foi removida do sistema.` });
+    const idBusca = Number(requisicao.params.id);
+
+    // Procuramos a posição física da tarefa na lista
+    const indiceTarefa = bancoDeTarefas.findIndex(function(tarefa) {
+        return tarefa.id === idBusca;
+    });
+
+    // Se não localizar o ID, barra a operação retornando 404
+    if (indiceTarefa === -1) {
+        console.log(`Log do Servidor: Falha ao excluir. ID ${idBusca} não encontrado.`);
+        return resposta.status(404).json({
+            erro: "Não Encontrado",
+            mensagem: `Impossível remover. Nenhuma tarefa com o ID ${idBusca} foi localizada.`
+        });
+    }
+
+    // Captura o nome da tarefa antes de apagar (para usarmos na mensagem de log)
+    const nomeTarefaExcluida = bancoDeTarefas[indiceTarefa].titulo;
+
+    /* O método .splice() remove o elemento diretamente do array original.
+       Passamos o índice localizado e o número 1, indicando para apagar apenas aquele item. */
+    bancoDeTarefas.splice(indiceTarefa, 1);
+
+    console.log(`Log do Servidor: Tarefa "${nomeTarefaExcluida}" foi deletada da memória.`);
+    console.log(`Tarefas restantes no servidor: ${bancoDeTarefas.length}`);
+
+    // Responde ao cliente confirmando o sucesso da deleção
+    resposta.json({
+        sucesso: true,
+        mensagem: `A tarefa "${nomeTarefaExcluida}" foi removida do ecossistema com sucesso.`
+    });
 });
 
 

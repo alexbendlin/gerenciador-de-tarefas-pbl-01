@@ -60,3 +60,31 @@ console.log("Minha Lista de Tarefas Atual:", listaDeTarefasMock);
 
 // Descobrindo o tamanho da lista dinamicamente
 console.log("Quantidade de tarefas na lista:", listaDeTarefasMock.length);
+
+// ==========================================================================
+// RESOLUÇÃO DO DESAFIO: ADICIONANDO NOVOS ELEMENTOS AO ARRAY
+// ==========================================================================
+
+// 1. Criando um novo objeto de tarefa (simulando a captura de um formulário)
+const novaTarefa = {
+    id: 3,
+    titulo: "Praticar o desafio de JavaScript",
+    descricao: "Criar um objeto e inseri-lo no array de tarefas utilizando o método push.",
+    prazo: "2026-05-30",
+    categoria: "Pessoal",
+    concluida: false
+};
+
+// 2. Inserindo o novo objeto diretamente no final do nosso array existente
+listaDeTarefasMock.push(novaTarefa);
+
+/* Por que usar push? 
+   O método .push() é uma função nativa dos arrays em JavaScript. Ele adiciona 
+   um ou mais elementos ao final do array e atualiza o tamanho da lista automaticamente.
+*/
+
+// 3. Exibindo os resultados no console para validação
+console.log("--- RESULTADO DO DESAFIO ---");
+console.log("A nova tarefa foi adicionada com sucesso!");
+console.log("Lista de tarefas atualizada:", listaDeTarefasMock);
+console.log("Novo tamanho total da lista:", listaDeTarefasMock.length);

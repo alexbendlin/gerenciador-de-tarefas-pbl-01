@@ -20,17 +20,30 @@ const listaTarefasElemento = document.querySelector("#lista-tarefas");
 let tarefas = carregarDoLocalStorage();
 
 // ==========================================================================
-// FUNÇÃO: CARREGAR TAREFAS DO LOCALSTORAGE
+// FUNÇÃO: CARREGAR TAREFAS DO LOCALSTORAGE (ATUALIZADA COM TRY/CHATCH)
 // ==========================================================================
 function carregarDoLocalStorage() {
     const dadosSalvos = localStorage.getItem("tarefas_master");
     
-    if (dadosSalvos) {
-        /* Se encontramos texto salvo, usamos o JSON.parse para converter 
-           aquela string de volta para um Array de Objetos JavaScript real. */
+    // Se não houver nenhum dado salvo, retorna logo o array vazio padrão
+    if (!dadosSalvos) {
+        return [];
+    }
+
+    /* RESOLUÇÃO DO DESAFIO: Protegendo a aplicação contra dados corrompidos.
+       O bloco 'try' tenta executar o código. Se algo falhar, o 'catch' assume 
+       o controle evitando o travamento do sistema. */
+    try {
+        // Tenta converter a string JSON de volta para Array de Objetos
         return JSON.parse(dadosSalvos);
-    } else {
-        // Caso não exista nada salvo, retorna um array vazio padrão
+    } catch (erro) {
+        // Bloco executado apenas se o JSON estiver quebrado ou inválido
+        console.error("Erro crítico: Os dados do LocalStorage foram corrompidos!", erro);
+        
+        // Limpa o registro quebrado do navegador para o erro não se repetir
+        localStorage.removeItem("tarefas_master");
+        
+        // Retorna um array vazio seguro para que o app continue funcionando do zero
         return [];
     }
 }

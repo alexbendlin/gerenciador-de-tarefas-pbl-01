@@ -94,12 +94,11 @@ app.get('/tarefas/:id', function(requisicao, resposta) {
     });
 });
 
-// 3. ROTA DE CRIAÇÃO (POST /tarefas) - IMPLEMENTAÇÃO REAL
+// 3. ROTA DE CRIAÇÃO (POST /tarefas) - COM VALIDAÇÃO DE PRIORIDADE (DESAFIO)
 app.post('/tarefas', function(requisicao, resposta) {
-    // Extraindo as propriedades enviadas pelo cliente de dentro do corpo da requisição
     const { titulo, descricao, prazo, categoria, prioridade } = requisicao.body;
 
-    // Validação básica de segurança preventiva
+    // 1. Validação de campos obrigatórios (existente)
     if (!titulo || !prazo) {
         return resposta.status(400).json({
             erro: "Dados incompletos",
@@ -107,24 +106,38 @@ app.post('/tarefas', function(requisicao, resposta) {
         });
     }
 
-    // Montando o objeto estruturado que será salvo no nosso array
+    // 2. RESOLUÇÃO DO DESAFIO: Validação preventiva da prioridade
+    // Definimos um array contendo os únicos termos aceitos pelo nosso sistema
+    const prioridadesPermitidas = ["baixa", "média", "alta"];
+    
+    // Tratamos o dado recebido para letras minúsculas para evitar problemas de case-sensitivity
+    const prioridadeTratada = prioridade ? prioridade.toLowerCase() : "baixa";
+
+    // Se o valor enviado não estiver contido dentro da nossa lista de permissões...
+    if (!prioridadesPermitidas.includes(prioridadeTratada)) {
+        /* Interrompemos o fluxo e devolvemos o Status 400 (Bad Request) explicando 
+           quais são as opções aceitáveis para o cliente corrigir o disparo */
+        return resposta.status(400).json({
+            erro: "Valor inválido para o campo 'prioridade'",
+            mensagem: `A prioridade enviada '${prioridade}' não é suportada. Use apenas: 'baixa', 'média' ou 'alta'.`
+        });
+    }
+
+    // 3. Montando o objeto estruturado caso passe em todas as validações
     const novaTarefa = {
-        id: Date.now(), // Gera um ID numérico único baseado no timestamp atual do servidor
+        id: Date.now(), 
         titulo: titulo,
         descricao: descricao || "",
         prazo: prazo,
         categoria: categoria || "geral",
-        prioridade: prioridade || "baixa",
-        concluida: false // Toda tarefa nasce pendente no sistema
+        prioridade: prioridadeTratada, // Salvamos o dado devidamente padronizado
+        concluida: false 
     };
 
-    // Salvando o objeto criado dentro do nosso array global em memória
     bancoDeTarefas.push(novaTarefa);
 
     console.log("Log do Servidor: Nova tarefa adicionada com sucesso!", novaTarefa);
-    console.log(`Total de tarefas armazenadas no servidor: ${bancoDeTarefas.length}`);
 
-    // Respondendo ao cliente com o Status 201 (Created) e devolvendo a tarefa criada com seu respectivo ID
     resposta.status(201).json({
         sucesso: true,
         mensagem: "Tarefa cadastrada com sucesso na memória do servidor!",

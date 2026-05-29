@@ -9,6 +9,7 @@ const inputPrazo = document.querySelector("#prazo");
 const inputCategoria = document.querySelector("#categoria");
 const inputPrioridade = document.querySelector("#prioridade");
 const listaTarefasElemento = document.querySelector("#lista-tarefas");
+const btnDocente = document.querySelector("#btn-docente");
 
 // CONFIGURAÇÃO CRÍTICA: URL do seu Codespaces (Copie da aba Ports da Porta 3000)
 const URL_API = "https://urban-parakeet-pxqrg699qwwc5xw-3000.app.github.dev";
@@ -78,6 +79,11 @@ formTarefa.addEventListener("submit", function(event) {
     limparFormulario();
 });
 
+// Vincula o clique do botão à nossa nova função assíncrona
+if (btnDocente) {
+    btnDocente.addEventListener("click", exibirDadosDocente);
+}
+
 // ==========================================================================
 // 3. FUNÇÕES DE SUPORTE E RENDERIZAÇÃO
 // ==========================================================================
@@ -128,6 +134,43 @@ function renderizarTarefas() {
         `;
         listaTarefasElemento.innerHTML += cardHTML;
     });
+}
+
+// ==========================================================================
+// DESAFIO ENCONTRO 17: BUSCAR E EXIBIR DADOS DO DOCENTE DA API (GET)
+// ==========================================================================
+async function exibirDadosDocente() {
+    console.log("Solicitando dados do docente ao backend...");
+
+    try {
+        // Dispara a requisição assíncrona para o endpoint utilitário /professor
+        const resposta = await fetch(`${URL_API}/professor`);
+
+        // Validação de segurança do status da resposta
+        if (!resposta.ok) {
+            throw new Error(`Não foi possível ler os dados. Status: ${resposta.status}`);
+        }
+
+        // Converte o JSON recebido para objeto JavaScript
+        const dadosProfessor = await resposta.json();
+        console.log("Dados do professor recebidos:", dadosProfessor);
+
+        // Formata a mensagem com os dados dinâmicos vindos do servidor Express
+        const mensagemFormatada = `
+======= DADOS DA DISCIPLINA =======
+👨‍🏫 Professor: ${dadosProfessor.nome || "Não informado"}
+📚 Matéria: ${dadosProfessor.materia || "Não informada"}
+🎓 Regime: PBL (Project-Based Learning)
+===================================
+        `;
+
+        // Exibe o alerta nativo na tela do navegador
+        alert(mensagemFormatada);
+
+    } catch (erro) {
+        console.error("❌ Erro ao buscar dados do docente:", erro.message);
+        alert(`Falha na integração: Não foi possível obter os dados do professor.\nDetalhe: ${erro.message}`);
+    }
 }
 
 // ==========================================================================

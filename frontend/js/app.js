@@ -15,9 +15,25 @@ const inputPrioridade = document.querySelector("#prioridade");
 // Seletor da lista onde os cards serão injetados
 const listaTarefasElemento = document.querySelector("#lista-tarefas");
 
-/* Array global que funcionará como o "Banco de Dados" temporário do nosso Frontend.
-   Ele começa vazio e vai acumulando os objetos de tarefas criados. */
-let tarefas = [];
+/* Em vez de começar sempre com um array vazio, tentamos buscar o que está 
+   salvo no LocalStorage. Se não houver nada (primeiro acesso), iniciamos vazio. */
+let tarefas = carregarDoLocalStorage();
+
+// ==========================================================================
+// FUNÇÃO: CARREGAR TAREFAS DO LOCALSTORAGE
+// ==========================================================================
+function carregarDoLocalStorage() {
+    const dadosSalvos = localStorage.getItem("tarefas_master");
+    
+    if (dadosSalvos) {
+        /* Se encontramos texto salvo, usamos o JSON.parse para converter 
+           aquela string de volta para um Array de Objetos JavaScript real. */
+        return JSON.parse(dadosSalvos);
+    } else {
+        // Caso não exista nada salvo, retorna um array vazio padrão
+        return [];
+    }
+}
 
 // ==========================================================================
 // 2. INTERCEPTAÇÃO DE EVENTOS (EVENT LISTENERS)
@@ -39,6 +55,9 @@ formTarefa.addEventListener("submit", function(event) {
 
     // Adiciona o novo objeto criado no fim da nossa lista na memória
     tarefas.push(novaTarefa);
+
+    // Salva a lista atualizada no disco rígido do navegador
+    salvarNoLocalStorage();
 
     // Renderiza a lista atualizada imediatamente na tela para o usuário ver
     renderizarTarefas();
@@ -63,21 +82,21 @@ function limparFormulario() {
 }
 
 // ==========================================================================
-// FUNÇÃO: RENDERIZAR TAREFAS NA TELA
+// FUNÇÃO: RENDERIZAR TAREFAS NA TELA (ATUALIZADA COM DESAFIO)
 // ==========================================================================
 function renderizarTarefas() {
     // 1. Limpa o conteúdo atual da lista para não duplicar itens antigos
-    listaTarefasElemento.innerHTML = "";
+    listaTarefasElemento.innerHTML = "...";
 
-    // 2. Verifica se a lista está vazia para exibir um feedback visual
+    // 2. Verifica se a lista está vazia para exibir a mensagem estilizada
     if (tarefas.length === 0) {
         listaTarefasElemento.innerHTML = `<p class="lista-vazia">Nenhuma tarefa cadastrada ainda. Comece adicionando uma acima! 🎯</p>`;
-        return; // Interrompe a função aqui caso não existam tarefas
+        return; 
     }
 
     // 3. Percorre o array de tarefas e reconstrói o HTML de cada card
     tarefas.forEach(function(tarefa) {
-        // Criamos o HTML do card de forma idêntica ao nosso design pattern anterior
+        // RESOLUÇÃO DO DESAFIO: .toUpperCase() aplicado diretamente na interpolação da prioridade
         const cardHTML = `
             <li class="tarefa-item">
                 <div class="tarefa-info">
@@ -85,7 +104,7 @@ function renderizarTarefas() {
                     <p>${tarefa.descricao || "Sem descrição fornecida."}</p>
                     <div class="meta-container">
                         <span class="badge-categoria">${tarefa.categoria}</span>
-                        <span class="badge-prioridade prioridade-${tarefa.prioridade}">⚠ ${tarefa.prioridade}</span>
+                        <span class="badge-prioridade prioridade-${tarefa.prioridade}">⚠ ${tarefa.prioridade.toUpperCase()}</span>
                         <span class="prazo-data">📅 Prazo: ${tarefa.prazo}</span>
                     </div>
                 </div>
@@ -96,7 +115,27 @@ function renderizarTarefas() {
             </li>
         `;
 
-        // Acumula o novo card de forma incremental dentro da nossa UL do HTML
+        // Acumula o novo card dentro da nossa UL do HTML
         listaTarefasElemento.innerHTML += cardHTML;
     });
 }
+
+// ==========================================================================
+// FUNÇÃO: SALVAR TAREFAS NO LOCALSTORAGE
+// ==========================================================================
+function salvarNoLocalStorage() {
+    /* Como o localStorage só aceita texto puro, usamos o JSON.stringify 
+       para converter nosso array de objetos em uma grande String formatada. */
+    const tarefasEmTexto = JSON.stringify(tarefas);
+    
+    // Gravamos na chave "tarefas_master" do navegador
+    localStorage.setItem("tarefas_master", tarefasEmTexto);
+}
+
+// ==========================================================================
+// EXECUÇÃO INICIAL
+// ==========================================================================
+
+/* Chamamos a função uma vez logo que a página carrega. Como o array de tarefas 
+   está vazio, ela vai injetar imediatamente o nosso card de 'lista vazia'. */
+renderizarTarefas();

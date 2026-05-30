@@ -265,31 +265,37 @@ async function concluirTarefaNoServidor(idTarefa) {
 }
 
 // ==========================================================================
-// MÓDULO 3: FUNÇÃO ASSÍNCRONA PARA REMOVER TAREFA DO BACKEND (DELETE)
+// MÓDULO 3: FUNÇÃO ASSÍNCRONA PARA REMOVER TAREFA COM TRATAMENTO DE REGRA DE NEGÓCIO
 // ==========================================================================
 async function excluirTarefaNoServidor(idTarefa) {
     console.log(`Disparando requisição DELETE para a tarefa ID: ${idTarefa}...`);
 
     try {
-        // Passamos o ID como parâmetro de rota diretamente na URL
         const respostaRede = await fetch(`${URL_API}/tarefas/${idTarefa}`, {
-            method: "DELETE" // Especificamos o método HTTP de exclusão permanente
-            // Nota: O método DELETE geralmente não exige o envio de um 'body' ou headers de conteúdo
+            method: "DELETE"
         });
 
+        // SE O SERVIDOR REJEITAR (Ex: Tarefa ainda está pendente)
         if (!respostaRede.ok) {
-            throw new Error(`Falha ao excluir a tarefa no servidor. Status: ${respostaRede.status}`);
+            // 1. Extrai o JSON de erro enviado pelo Express (que contém a mensagem de bloqueio)
+            const dadosErro = await respostaRede.json();
+            
+            // 2. Lança a mensagem exata do backend para ser capturada pelo catch abaixo
+            throw new Error(dadosErro.detalhe || dadosErro.erro || "Falha ao tentar excluir a tarefa.");
         }
 
+        // FLUXO DE SUCESSO (Se o servidor responder status 200/204)
         const dadosConfirmacao = await respostaRede.json();
         console.log("Servidor confirmou a exclusão com sucesso:", dadosConfirmacao);
 
-        // SINCRONIZAÇÃO: O dado sumiu da API, agora recarregamos a lista oficial para atualizar a tela
+        // Atualiza a tela trazendo a nova lista oficial
         await buscarTarefasDoServidor();
 
     } catch (erro) {
-        console.error("❌ Erro na integração da rota DELETE:", erro.message);
-        alert(`Não foi possível excluir a tarefa.\nDetalhe: ${erro.message}`);
+        console.error("❌ Bloqueio ou Erro na rota DELETE:", erro.message);
+        
+        // Exibe para o usuário o motivo exato enviado pelo backend no log
+        alert(`Não é possível excluir: ${erro.message}\n\n💡 Dica: Conclua a tarefa primeiro antes de tentar removê-la.`);
     }
 }
 

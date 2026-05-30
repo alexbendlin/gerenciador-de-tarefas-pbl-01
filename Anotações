@@ -1,1 +1,18 @@
 Falta implementar o Encontro 17.
+
+#########################################
+>>> Terminal 1: O Backend (Fábrica / API)
+1. Garanta que está na pasta do backend:
+   cd /workspaces/gerenciador-de-tarefas-pbl-01/backend
+
+2. Inicie o servidor em modo de desenvolvimento:
+   npm run dev
+
+Dica didática: Deixe este terminal aberto e quieto. Ele vai exibir a mensagem "Servidor rodando com sucesso na porta 3000!".
+
+>>> Terminal 2: O Frontend (Interface / Loja)
+1. Garanta que está na pasta raiz do projeto:
+   cd /workspaces/gerenciador-de-tarefas-pbl-01
+
+2. Inicie o servidor estático forçando a porta 5000:
+   npx serve frontend -l 5000

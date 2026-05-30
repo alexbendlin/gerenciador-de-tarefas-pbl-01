@@ -55,15 +55,13 @@ async function buscarTarefasDoServidor() {
 }
 
 // ==========================================================================
-// 2. INTERCEPTAÇÃO DE EVENTOS - CADASTRO DE TAREFA (MÉTODO POST)
+// 2. INTERCEPTAÇÃO DE EVENTOS - CADASTRO COM CAPTURA DE ERRO DO GUARDIÃO
 // ==========================================================================
-/* Transformamos a função do evento em assíncrona adicionando o 'async' antes de function */
 formTarefa.addEventListener("submit", async function(event) {
     event.preventDefault();
 
     console.log("Formulário acionado. Preparando envio de nova tarefa...");
 
-    // 1. Captura e monta o objeto com os dados atuais dos inputs
     const novaTarefa = {
         titulo: inputTitulo.value,
         descricao: inputDescricao.value,
@@ -73,36 +71,35 @@ formTarefa.addEventListener("submit", async function(event) {
     };
 
     try {
-        // 2. Dispara a requisição POST para a API configurando as opções do Fetch
         const respostaRede = await fetch(`${URL_API}/tarefas`, {
-            method: "POST", // Define explicitamente o método HTTP de criação
+            method: "POST",
             headers: {
-                // A etiqueta do pacote: avisa ao Express que estamos enviando JSON
-                "Content-Type": "application/json" 
+                "Content-Type": "application/json"
             },
-            // Transforma o objeto JavaScript em uma string de texto JSON puro para a rede
-            body: JSON.stringify(novaTarefa) 
+            body: JSON.stringify(novaTarefa)
         });
 
-        // Segurança: Se o servidor rejeitar (ex: validação do título falhou), cai no catch
+        // RESOLUÇÃO DO DESAFIO: Se a resposta não for OK, extraímos o JSON de erro do Guardião
         if (!respostaRede.ok) {
-            throw new Error(`Falha ao cadastrar no servidor. Status: ${respostaRede.status}`);
+            /* Lemos o pacote de erro retornado pelo servidor (que contém o campo 'detalhe') */
+            const dadosErro = await respostaRede.json();
+            
+            /* Lançamos um erro contendo a mensagem exata gerada pelo backend */
+            throw new Error(dadosErro.detalhe || "Erro desconhecido no servidor.");
         }
 
-        // 3. Captura o JSON de sucesso retornado pela nossa API
         const resultadoApi = await respostaRede.json();
         console.log("Tarefa cadastrada e persistida com sucesso no Backend:", resultadoApi);
 
-        /* 4. FLUXO DE SUCESSO: Em vez de empurrar o objeto local manualmente, 
-           re-executamos a busca oficial para trazer a lista atualizada direto da API */
         await buscarTarefasDoServidor();
-
-        // 5. Limpa os campos do formulário para o próximo uso
         limparFormulario();
 
     } catch (erro) {
+        // O bloco catch agora recebe a mensagem amigável vinda direto do servidor!
         console.error("❌ Erro ao tentar cadastrar nova tarefa:", erro.message);
-        alert(`Não foi possível salvar a tarefa.\nDetalhe: ${erro.message}`);
+        
+        // Exibe o alerta com o texto exato do Guardião: "Falha de cadastro: Campos obrigatórios ausentes."
+        alert(`Atenção: ${erro.message}`);
     }
 });
 

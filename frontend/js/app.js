@@ -125,6 +125,18 @@ listaTarefasElemento.addEventListener("click", function(event) {
         // Chamamos a nossa função assíncrona passando o ID extraído
         concluirTarefaNoServidor(idCapturado);
     }
+
+    // RESOLUÇÃO DO DESAFIO: Trata o clique no botão de Excluir (Preparação para o DELETE)
+    if (elementoClicado.classList.contains("btn-excluir")) {
+        // 1. Capturamos o ID guardado no atributo customizado data-id do botão de exclusão
+        const idCapturadoExclusao = elementoClicado.dataset.id;
+        
+        // 2. Disparamos o log estruturado no console sinalizando a captura correta do ID
+        console.log(`[INFRAESTRUTURA] Clique de exclusão interceptado! ID alvo para remoção: ${idCapturadoExclusao}`);
+        
+        // 3. Exibimos um alerta visual simples na tela informando a ação
+        alert(`Ação de exclusão disparada para a tarefa ID: ${idCapturadoExclusao}\nInfraestrutura de evento pronta para o Encontro 20!`);
+    }    
 });
 
 // ==========================================================================

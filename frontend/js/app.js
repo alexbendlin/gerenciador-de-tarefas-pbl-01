@@ -109,34 +109,32 @@ if (btnDocente) {
 }
 
 // ==========================================================================
-// INTERCEPTAÇÃO DE EVENTOS: DELEGAÇÃO DE CLIQUES NA LISTA (MÉTODO PUT)
+// INTERCEPTAÇÃO DE EVENTOS: DELEGAÇÃO DE CLIQUES NA LISTA (ATUALIZADA)
 // ==========================================================================
 listaTarefasElemento.addEventListener("click", function(event) {
-    // Descobrimos exatamente qual elemento disparou o clique original do usuário
     const elementoClicado = event.target;
 
-    // Se o elemento clicado contiver a classe do nosso botão de concluir...
+    // Trata o clique no botão de Concluir (PUT)
     if (elementoClicado.classList.contains("btn-concluir")) {
-        // Capturamos o ID guardado no atributo customizado data-id do HTML
         const idCapturado = elementoClicado.dataset.id;
-        
-        console.log(`Clique capturado via Delegação de Eventos. ID extraído: ${idCapturado}`);
-        
-        // Chamamos a nossa função assíncrona passando o ID extraído
+        console.log(`Clique de conclusão para o ID: ${idCapturado}`);
         concluirTarefaNoServidor(idCapturado);
     }
 
-    // RESOLUÇÃO DO DESAFIO: Trata o clique no botão de Excluir (Preparação para o DELETE)
+    // Trata o clique no botão de Excluir (DELETE)
     if (elementoClicado.classList.contains("btn-excluir")) {
-        // 1. Capturamos o ID guardado no atributo customizado data-id do botão de exclusão
         const idCapturadoExclusao = elementoClicado.dataset.id;
         
-        // 2. Disparamos o log estruturado no console sinalizando a captura correta do ID
-        console.log(`[INFRAESTRUTURA] Clique de exclusão interceptado! ID alvo para remoção: ${idCapturadoExclusao}`);
+        console.log(`Clique de exclusão para o ID: ${idCapturadoExclusao}`);
         
-        // 3. Exibimos um alerta visual simples na tela informando a ação
-        alert(`Ação de exclusão disparada para a tarefa ID: ${idCapturadoExclusao}\nInfraestrutura de evento pronta para o Encontro 20!`);
-    }    
+        // Boa prática pedagógica: Adicionar uma confirmação nativa antes de deletar do servidor
+        const confirmar = confirm("Tem certeza absoluta que deseja excluir esta tarefa permanentemente?");
+        
+        if (confirmar) {
+            // Se o usuário clicar em OK, dispara o fetch DELETE
+            excluirTarefaNoServidor(idCapturadoExclusao);
+        }
+    }
 });
 
 // ==========================================================================
@@ -263,6 +261,35 @@ async function concluirTarefaNoServidor(idTarefa) {
     } catch (erro) {
         console.error("❌ Erro na integração da rota PUT:", erro.message);
         alert(`Não foi possível concluir a tarefa.\nDetalhe: ${erro.message}`);
+    }
+}
+
+// ==========================================================================
+// MÓDULO 3: FUNÇÃO ASSÍNCRONA PARA REMOVER TAREFA DO BACKEND (DELETE)
+// ==========================================================================
+async function excluirTarefaNoServidor(idTarefa) {
+    console.log(`Disparando requisição DELETE para a tarefa ID: ${idTarefa}...`);
+
+    try {
+        // Passamos o ID como parâmetro de rota diretamente na URL
+        const respostaRede = await fetch(`${URL_API}/tarefas/${idTarefa}`, {
+            method: "DELETE" // Especificamos o método HTTP de exclusão permanente
+            // Nota: O método DELETE geralmente não exige o envio de um 'body' ou headers de conteúdo
+        });
+
+        if (!respostaRede.ok) {
+            throw new Error(`Falha ao excluir a tarefa no servidor. Status: ${respostaRede.status}`);
+        }
+
+        const dadosConfirmacao = await respostaRede.json();
+        console.log("Servidor confirmou a exclusão com sucesso:", dadosConfirmacao);
+
+        // SINCRONIZAÇÃO: O dado sumiu da API, agora recarregamos a lista oficial para atualizar a tela
+        await buscarTarefasDoServidor();
+
+    } catch (erro) {
+        console.error("❌ Erro na integração da rota DELETE:", erro.message);
+        alert(`Não foi possível excluir a tarefa.\nDetalhe: ${erro.message}`);
     }
 }
 

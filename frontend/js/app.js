@@ -55,14 +55,16 @@ async function buscarTarefasDoServidor() {
 }
 
 // ==========================================================================
-// 2. INTERCEPTAÇÃO DE EVENTOS (EVENT LISTENERS)
+// 2. INTERCEPTAÇÃO DE EVENTOS - CADASTRO DE TAREFA (MÉTODO POST)
 // ==========================================================================
-
-formTarefa.addEventListener("submit", function(event) {
+/* Transformamos a função do evento em assíncrona adicionando o 'async' antes de function */
+formTarefa.addEventListener("submit", async function(event) {
     event.preventDefault();
 
+    console.log("Formulário acionado. Preparando envio de nova tarefa...");
+
+    // 1. Captura e monta o objeto com os dados atuais dos inputs
     const novaTarefa = {
-        // O ID agora é opcional aqui, pois o backend irá gerar usando Date.now() no servidor
         titulo: inputTitulo.value,
         descricao: inputDescricao.value,
         prazo: inputPrazo.value,
@@ -70,13 +72,38 @@ formTarefa.addEventListener("submit", function(event) {
         prioridade: inputPrioridade.value
     };
 
-    /* NOTA PEDAGÓGICA PARA O ENCONTRO 18: 
-       Por enquanto, vamos apenas simular no array local para manter a interface funcionando. 
-       No próximo encontro, trocaremos as linhas abaixo pelo fetch(..., { method: 'POST' }) */
-    tarefas.push({ ...novaTarefa, id: Date.now(), concluida: false });
-    renderizarTarefas();
-    
-    limparFormulario();
+    try {
+        // 2. Dispara a requisição POST para a API configurando as opções do Fetch
+        const respostaRede = await fetch(`${URL_API}/tarefas`, {
+            method: "POST", // Define explicitamente o método HTTP de criação
+            headers: {
+                // A etiqueta do pacote: avisa ao Express que estamos enviando JSON
+                "Content-Type": "application/json" 
+            },
+            // Transforma o objeto JavaScript em uma string de texto JSON puro para a rede
+            body: JSON.stringify(novaTarefa) 
+        });
+
+        // Segurança: Se o servidor rejeitar (ex: validação do título falhou), cai no catch
+        if (!respostaRede.ok) {
+            throw new Error(`Falha ao cadastrar no servidor. Status: ${respostaRede.status}`);
+        }
+
+        // 3. Captura o JSON de sucesso retornado pela nossa API
+        const resultadoApi = await respostaRede.json();
+        console.log("Tarefa cadastrada e persistida com sucesso no Backend:", resultadoApi);
+
+        /* 4. FLUXO DE SUCESSO: Em vez de empurrar o objeto local manualmente, 
+           re-executamos a busca oficial para trazer a lista atualizada direto da API */
+        await buscarTarefasDoServidor();
+
+        // 5. Limpa os campos do formulário para o próximo uso
+        limparFormulario();
+
+    } catch (erro) {
+        console.error("❌ Erro ao tentar cadastrar nova tarefa:", erro.message);
+        alert(`Não foi possível salvar a tarefa.\nDetalhe: ${erro.message}`);
+    }
 });
 
 // Vincula o clique do botão à nossa nova função assíncrona

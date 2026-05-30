@@ -290,3 +290,15 @@ footer {
     border-radius: var(--raio-borda);
     background-color: #fafafa;
 }
+
+/* Quando o card recebe a classe 'concluida', aplicamos o risco e esmaecemos o texto */
+.tarefa-item.concluida h3 {
+    text-decoration: line-through !important;
+    color: #888888;
+    opacity: 0.7;
+}
+
+.tarefa-item.concluida p {
+    color: #aaaaaa;
+    opacity: 0.6;
+}

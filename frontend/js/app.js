@@ -109,6 +109,25 @@ if (btnDocente) {
 }
 
 // ==========================================================================
+// INTERCEPTAÇÃO DE EVENTOS: DELEGAÇÃO DE CLIQUES NA LISTA (MÉTODO PUT)
+// ==========================================================================
+listaTarefasElemento.addEventListener("click", function(event) {
+    // Descobrimos exatamente qual elemento disparou o clique original do usuário
+    const elementoClicado = event.target;
+
+    // Se o elemento clicado contiver a classe do nosso botão de concluir...
+    if (elementoClicado.classList.contains("btn-concluir")) {
+        // Capturamos o ID guardado no atributo customizado data-id do HTML
+        const idCapturado = elementoClicado.dataset.id;
+        
+        console.log(`Clique capturado via Delegação de Eventos. ID extraído: ${idCapturado}`);
+        
+        // Chamamos a nossa função assíncrona passando o ID extraído
+        concluirTarefaNoServidor(idCapturado);
+    }
+});
+
+// ==========================================================================
 // 3. FUNÇÕES DE SUPORTE E RENDERIZAÇÃO
 // ==========================================================================
 
@@ -139,8 +158,11 @@ function renderizarTarefas() {
 
     // 3. Se houver tarefas, reconstrói os cards normalmente
     tarefas.forEach(function(tarefa) {
+        // Criamos uma variável auxiliar simples para verificar se a classe deve existir
+        const classeStatus = tarefa.concluida ? "tarefa-item concluida" : "tarefa-item";
+
         const cardHTML = `
-            <li class="tarefa-item">
+            <li class="${classeStatus}">
                 <div class="tarefa-info">
                     <h3>${tarefa.titulo}</h3>
                     <p>${tarefa.descricao || "Sem descrição fornecida."}</p>
@@ -151,8 +173,10 @@ function renderizarTarefas() {
                     </div>
                 </div>
                 <div class="tarefa-acoes">
-                    <button class="btn-concluir" aria-label="Concluir tarefa">✔ Concluir</button>
-                    <button class="btn-excluir" aria-label="Excluir tarefa">❌ Excluir</button>
+                    <button class="btn-concluir" data-id="${tarefa.id}" aria-label="Concluir tarefa" ${tarefa.concluida ? 'disabled style="background-color: #aaa;"' : ''}>
+                        ${tarefa.concluida ? '✔ Concluída' : '✔ Concluir'}
+                    </button>
+                    <button class="btn-excluir" data-id="${tarefa.id}" aria-label="Excluir tarefa">❌ Excluir</button>
                 </div>
             </li>
         `;
@@ -196,6 +220,40 @@ async function exibirDadosDocente() {
         alert(`Falha na integração: Não foi possível obter os dados do professor.\nDetalhe: ${erro.message}`);
     }
 }
+
+// ==========================================================================
+// MÓDULO 3: FUNÇÃO ASSÍNCRONA PARA MARCAR TAREFA COMO CONCLUÍDA (PUT)
+// ==========================================================================
+async function concluirTarefaNoServidor(idTarefa) {
+    console.log(`Disparando atualização PUT para a tarefa ID: ${idTarefa}...`);
+
+    try {
+        // Enviamos o ID diretamente na URL, atendendo ao parâmetro de rota do Express
+        const respostaRede = await fetch(`${URL_API}/tarefas/${idTarefa}`, {
+            method: "PUT", // Método HTTP específico para atualização completa/parcial
+            headers: {
+                "Content-Type": "application/json"
+            },
+            // Enviamos a propriedade que queremos modificar no corpo da requisição
+            body: JSON.stringify({ concluida: true })
+        });
+
+        if (!respostaRede.ok) {
+            throw new Error(`Falha ao atualizar tarefa. Status: ${respostaRede.status}`);
+        }
+
+        const dadosAtualizados = await respostaRede.json();
+        console.log("Servidor confirmou a atualização com sucesso:", dadosAtualizados);
+
+        // Atualização bem-sucedida! Recarregamos a lista oficial vinda da API
+        await buscarTarefasDoServidor();
+
+    } catch (erro) {
+        console.error("❌ Erro na integração da rota PUT:", erro.message);
+        alert(`Não foi possível concluir a tarefa.\nDetalhe: ${erro.message}`);
+    }
+}
+
 
 // ==========================================================================
 // EXECUÇÃO INICIAL (ATUALIZADA)

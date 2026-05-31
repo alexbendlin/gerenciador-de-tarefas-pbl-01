@@ -5,6 +5,7 @@
 import express from 'express';
 import cors from 'cors'; // 1. IMPORTA O MECANISMO DE PERMISSÃO
 import 'colors';
+import { conectarBancoDeDados } from './infra/conector.js'; // Importa o novo módulo
 
 // Array global que armazenará as tarefas na memória do servidor durante esta fase do projeto
 let bancoDeTarefas = [];
@@ -307,10 +308,30 @@ app.use(function(erro, requisicao, resposta, next) {
 });
 
 
-// 5. Ligando o servidor para escutar as requisições na porta definida
-app.listen(PORTA, function() {
-    console.log(`==================================================`);
-    console.log(` Servidor rodando com sucesso na porta ${PORTA}!`);
-    console.log(` Acesse em: http://localhost:${PORTA} `);
-    console.log(`==================================================`);
-});
+// ==========================================================================
+// INICIALIZAÇÃO ORQUESTRADA DO ECOSSISTEMA
+// ==========================================================================
+async function iniciarSistema() {
+    try {
+        // 1. Tenta ligar o banco de dados primeiro e aguarda a promessa ser resolvida
+        await conectarBancoDeDados();
+
+        // 2. Com o banco ativo, o Express abre com segurança na porta 3000
+        const PORTA = 3000;
+        app.listen(PORTA, () => {
+            console.log("==================================================");
+            console.log(`🚀 Servidor rodando com sucesso na porta ${PORTA}!`);
+            console.log(`🔗 Acesse em: http://localhost:${PORTA}`);
+            console.log("==================================================\n");
+        });
+
+    } catch (erro) {
+        console.error("\n💥 FALHA DE STARTUP: O ecossistema não pôde ser iniciado.".red);
+        console.error(`Motivo original: ${erro.message}\n`.yellow);
+        // Encerra o processo do Node imediatamente com código de falha (1)
+        process.exit(1); 
+    }
+}
+
+// Dispara a inicialização combinada
+iniciarSistema();

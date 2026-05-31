@@ -6,6 +6,7 @@ import express from 'express';
 import cors from 'cors'; // 1. IMPORTA O MECANISMO DE PERMISSÃO
 import 'colors';
 import { conectarBancoDeDados } from './infra/conector.js'; // Importa o novo módulo
+import { bancoDadosInstance } from './infra/conector.js';
 
 // Array global que armazenará as tarefas na memória do servidor durante esta fase do projeto
 let bancoDeTarefas = [];
@@ -67,12 +68,49 @@ app.get('/professor', function(requisicao, resposta) {
 // ENDPOINTS RESTFUL DA API DE TAREFAS (ASSINATURAS DO CRUD)
 // ==========================================================================
 
-// 1. ROTA DE LEITURA TOTAL (GET /tarefas) - IMPLEMENTAÇÃO REAL
-app.get('/tarefas', function(requisicao, resposta) {
-    console.log(`Log do Servidor: Listando tarefas. Total atual: ${bancoDeTarefas.length}`);
-    
-    // Devolve o array completo em formato JSON com o Status padrão 200 OK
-    resposta.json(bancoDeTarefas);
+// ==========================================================================
+// ROTA: LISTAR TAREFAS DO BANCO DE DADOS (ATUALIZADA COM SQLITE)
+// ==========================================================================
+app.get('/tarefas', async function(requisicao, resposta, next) {
+    console.log("📡 API - Requisição GET recebida em /tarefas. Consultando SQLite...".cyan);
+
+    // Criamos uma Promise para encapsular a leitura assíncrona do driver do SQLite
+    const buscarTarefasDoBanco = () => {
+        return new Promise((resolve, reject) => {
+            const querySQL = "SELECT * FROM tarefas;";
+
+            // O método .all() traz todas as linhas da tabela como um array de objetos
+            bancoDadosInstance.all(querySQL, [], (erro, linhas) => {
+                if (erro) {
+                    return reject(erro);
+                }
+                resolve(linhas);
+            });
+        });
+    };
+
+    try {
+        // Aguarda a execução da query no arquivo de disco
+        const tarefasDoBanco = await buscarTarefasDoBanco();
+
+        /* TRATAMENTO PEDAGÓGICO: O SQLite armazena booleanos como 0 ou 1.
+           Para manter o frontend que os alunos fizeram funcionando sem quebras,
+           mapeamos o campo 'concluida' de volta para true ou false antes de enviar */
+        const tarefasFormatadas = tarefasDoBanco.map(tarefa => ({
+            ...tarefa,
+            concluida: tarefa.concluida === 1 // Se for 1 vira true, se for 0 vira false
+        }));
+
+        console.log(`Log do Servidor: Listando tarefas. Total atual no banco: ${tarefasFormatadas.length}`);
+        
+        // Envia o array de volta para o frontend
+        resposta.json(tarefasFormatadas);
+
+    } catch (erro) {
+        // Se a query falhar (ex: tabela corrompida), o Guardião Central captura
+        erro.message = `Erro ao ler a tabela de tarefas: ${erro.message}`;
+        next(erro);
+    }
 });
 
 // 2. ROTA DE LEITURA INDIVIDUAL (GET /tarefas/:id) - IMPLEMENTAÇÃO REAL
